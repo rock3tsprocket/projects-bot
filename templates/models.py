@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class Snippet:
     title: str
     description: str
     author_id: int
     locked: bool
-    
+
+
 @dataclass
 class Warn:
     user_id: int

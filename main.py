@@ -16,15 +16,17 @@ intents.moderation = True
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 token = str(os.getenv("TOKEN"))
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), intents=intents)
+
 
 @bot.event
 async def on_ready() -> None:
     print(f"{bot.user} is ready and online!")
     await bot.tree.sync()
+
 
 @bot.event
 async def on_command_error(ctx: commands.Context, error) -> None:
@@ -44,13 +46,22 @@ async def on_command_error(ctx: commands.Context, error) -> None:
     elif isinstance(error, commands.CommandNotFound):
         pass
 
+
 async def main() -> None:
     discord.utils.setup_logging(handler=handler, level=logging.DEBUG)
     async with bot:
         bot.db = Database("data/bot.db")
         await bot.db.setup()
-        for cogs in ["cogs.info", "cogs.moderation", "cogs.fun", "cogs.projects", "cogs.snippets", "cogs.warns"]:
+        for cogs in [
+            "cogs.info",
+            "cogs.moderation",
+            "cogs.fun",
+            "cogs.projects",
+            "cogs.snippets",
+            "cogs.warns",
+        ]:
             await bot.load_extension(cogs)
         await bot.start(token)
+
 
 asyncio.run(main())

@@ -1,5 +1,6 @@
 import aiosqlite
 
+
 class Database:
     def __init__(self, db_path):
         self.db_path = db_path
@@ -33,7 +34,9 @@ class Database:
 
     async def get_one(self, table, column, value):
         async with aiosqlite.connect(self.db_path) as db:
-            async with db.execute(f"SELECT * FROM {table} WHERE {column} = ?", (value,)) as cursor:
+            async with db.execute(
+                f"SELECT * FROM {table} WHERE {column} = ?", (value,)
+            ) as cursor:
                 return await cursor.fetchone()
 
     async def get_all(self, table):
@@ -43,16 +46,20 @@ class Database:
 
     async def get_all_where(self, table, column, value):
         async with aiosqlite.connect(self.db_path) as db:
-            async with db.execute(f"SELECT * FROM {table} WHERE {column} = ?", (value,)) as cursor:
+            async with db.execute(
+                f"SELECT * FROM {table} WHERE {column} = ?", (value,)
+            ) as cursor:
                 return await cursor.fetchall()
 
     async def update(self, table, column, value, where_column, where_value):
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f"UPDATE {table} SET {column} = ? WHERE {where_column} = ?", (value, where_value))
+            await db.execute(
+                f"UPDATE {table} SET {column} = ? WHERE {where_column} = ?",
+                (value, where_value),
+            )
             await db.commit()
 
     async def delete(self, table, column, value):
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(f"DELETE FROM {table} WHERE {column} = ?", (value,))
             await db.commit()
-        
