@@ -48,7 +48,7 @@ class Eval(commands.Cog):
                 output += f"\nstderr: {docker_sub.stderr}"
             output = output[:1900] or "(No output)"
             await ctx.send(
-                f"Return code: {docker_sub.returncode}. \n Output: ```{output}```"
+                f"Your code returned with code: {docker_sub.returncode}. Output: ```{output}```"
             )
         else:
             await ctx.send("Please, use the proper formatting.")
