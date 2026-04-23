@@ -8,7 +8,7 @@ class Eval(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=["e"])
-    @commands.is_owner()
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def eval(self, ctx: commands.Context, *, code: str = None) -> None:
         if code is None:
             await ctx.send("Correct usage: \n\`\`\`py \n<code here>\n\`\`\`")
@@ -20,6 +20,9 @@ class Eval(commands.Cog):
                     "--rm",
                     "--memory=50m",
                     "--memory-swap=50m",
+                    "--cpus=0.5",
+                    "--security-opt", "no-new-privileges",
+                    "--read-only"
                     "python:3.12-slim",
                     "python",
                     "-c",
