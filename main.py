@@ -43,6 +43,8 @@ async def on_command_error(ctx: commands.Context, error) -> None:
         await ctx.send("I don't have permission to do that.")
     elif isinstance(error, commands.BadArgument):
         await ctx.send("Command has a bad argument. Check all parameter are correct.")
+    elif isinstance(error, commands.NotOwner):
+        await ctx.sned("Only Saber can access this command.")
     elif isinstance(error, commands.CommandNotFound):
         pass
 
