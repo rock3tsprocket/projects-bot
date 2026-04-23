@@ -36,7 +36,9 @@ class Eval(commands.Cog):
                 text=True,
                 timeout=15
             )
-            output = docker_sub.stdout or docker_sub.stderr
+            output = docker_sub.stdout
+            if docker_sub.stderr:
+                output += f"\n{docker_sub.stderr}"
             await ctx.send(
                 f"Return code: {docker_sub.returncode}. \n Output: ```{output[:1900]}```"
             )
