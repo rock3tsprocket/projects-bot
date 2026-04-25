@@ -24,7 +24,6 @@ class Eval(commands.Cog):
                         "--memory-swap=50m",
                         "--cpus=0.5",
                         "--security-opt", "no-new-privileges",
-                        "--security-opt", "seccomp=/home/bot-vm/docker/seccomp.json",
                         "--read-only",
                         "--tmpfs", "/tmp:size=5m,noexec",
                         "--tmpfs", "/dev/shm:size=10m,noexec,nosuid",
