@@ -61,7 +61,7 @@ def run_python(code: str) -> subprocess.CompletedProcess[str]:
             "no-new-privileges",
             "--read-only",
             "--tmpfs",
-            "/tmp:size=5m,noexec",
+            "/tmp:size=50m,noexec",
             "--tmpfs",
             "/dev/shm:size=10m,noexec,nosuid",
             "--user",
