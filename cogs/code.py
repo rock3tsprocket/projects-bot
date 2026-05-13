@@ -39,7 +39,10 @@ class Eval(commands.Cog):
         output = docker_sub.stdout
         if docker_sub.stderr:
             output += f"\nstderr: {docker_sub.stderr}"
-        output = output[:1900] or "(No output)"
+        if len(output) >= 500:
+            output = f"{output[:500]} \n\nOutput limited to 500 characters."
+        else:
+            output = output or "(No output)"
         await ctx.send(
             f"Your code returned with code: {docker_sub.returncode}. ```{output}```",
             allowed_mentions=discord.AllowedMentions.none(),
