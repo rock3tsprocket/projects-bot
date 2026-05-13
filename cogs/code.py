@@ -91,7 +91,7 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
             "--network",
             "none",
             "--rm",
-            "--memory=50m",
+            "--memory=200m",
             "--memory-swap=50m",
             "--cpus=0.5",
             "--security-opt",
