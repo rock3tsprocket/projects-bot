@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import subprocess
 import asyncio
+import functools
 
 
 class Eval(commands.Cog):
@@ -16,10 +17,14 @@ class Eval(commands.Cog):
             return
         elif code.startswith("```py"):
             loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(None, run_python)
+            docker_sub = await loop.run_in_executor(
+                None, functools.partial(run_python, code)
+            )
         elif code.startswith("```go"):
             loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(None, run_go)
+            docker_sub = await loop.run_in_executor(
+                None, functools.partial(run_go, code)
+            )
         else:
             await ctx.send("Please, use the proper formatting.")
             return
@@ -34,7 +39,7 @@ class Eval(commands.Cog):
         )
 
 
-def run_python() -> subprocess.CompletedProcess[str]:
+def run_python(code: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             "docker",
@@ -71,7 +76,7 @@ def run_python() -> subprocess.CompletedProcess[str]:
     )
 
 
-def run_go() -> subprocess.CompletedProcess[str]:
+def run_go(code: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             "docker",
