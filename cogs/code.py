@@ -110,7 +110,7 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
             "--cap-drop",
             "all",
             "-i",
-            "sandbox-go",
+            "golang:latest",
             "timeout",
             "30",
             "/bin/sh",
