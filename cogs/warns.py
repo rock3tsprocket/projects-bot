@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 from templates.models import Warn
@@ -11,9 +11,9 @@ class Warns(commands.Cog):
     @commands.group(invoke_without_command=True, aliases=["w"])
     @commands.has_permissions(moderate_members=True)
     async def warn(
-        self, ctx, user: discord.Member = None, *, reason: str = None
+        self, ctx, user: discord.Member | None = None, *, reason: str | None = None
     ) -> None:
-        current_date = datetime.utcnow().strftime("%y-%m-%d")
+        current_date = datetime.now(timezone.utc).strftime("%y-%m-%d")
         moderator = ctx.author
         if ctx.invoked_subcommand is None and user is None:
             await ctx.send("`!help warn` for more information. ")
