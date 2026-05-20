@@ -4,6 +4,8 @@ from discord.ext import commands
 
 from typing import TYPE_CHECKING
 
+from templates.base_view import BaseView
+
 if TYPE_CHECKING:
     from main import Hux
 
@@ -16,6 +18,16 @@ class Testing(commands.Cog):
     @app_commands.describe(text="What the bot will say is a slash command")
     async def test(self, interaction: discord.Interaction, text: str = "This"):
         await interaction.response.send_message(f"{text} is a slash command!")
+
+    @app_commands.command(name="viewtest", description="View testing.")
+    async def viewtest(self, interaction: discord.Interaction) -> None:
+        view = BaseView
+        view.add_item(
+            discord.ui.Button(label="Testing", style=discord.ButtonStyle.blurple)
+        )
+        view.message = await interaction.response.send_message(
+            "This is supposed to be a view", view=view
+        )
 
 
 async def setup(bot: Hux):
