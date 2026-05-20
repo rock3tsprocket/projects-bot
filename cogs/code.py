@@ -1,3 +1,4 @@
+from types import _ReturnT_co
 import discord
 from discord.ext import commands
 import subprocess
@@ -32,12 +33,16 @@ class Eval(commands.Cog):
 
         output = docker_sub.stdout
         return_code = docker_sub.returncode
+
         if docker_sub.stderr:
             output += f"\nstderr: {docker_sub.stderr}"
+
         if len(output) >= 500:
             output = f"{output[:500]} \n\nOutput limited to 500 characters."
+
         else:
             output = output or "(No output)"
+
         return output, return_code
 
     @commands.command(aliases=["e"])
@@ -65,8 +70,18 @@ class Eval(commands.Cog):
                 + r"\`\`\`"
             )
             return
+
+        output, return_code = await self.eval_logic(code)
+
+        if return_code == 0:
+            message = f"Your eval was succesful. \n```\n{output}\n```"
+        else:
+            message = (
+                f"Your eval returned with error code {return_code} \n```\n{output}\n```"
+            )
+
         bot_message = await ctx.send(
-            f"Your code returned with code: {docker_sub.returncode}. ```{output}```",
+            message,
             allowed_mentions=discord.AllowedMentions.none(),
             view=view,
         )
@@ -84,13 +99,33 @@ class Eval(commands.Cog):
     ) -> None:
         if user.bot:
             return
-        if (
+        if not (
             user == reaction.message.author
             and reaction.message.content.startswith("!e")
             and str(reaction.emoji) == "\U0001f501"
         ):
-            await self.bot.process_commands(reaction.message)
-            await reaction.message.clear_reactions()
+            return
+
+        code = reaction.message.content[len("!e ") :].strip()
+
+        old_response = None
+        async for msg in reaction.message.channel.history(limit=20):
+            if msg.author == self.bot.user:
+                old_response = msg
+                break
+
+        output, return_code = await self.eval_logic(code)
+
+        if old_response:
+            if return_code == 0:
+                message = f"Your eval was succesful. \n```\n{output}\n```"
+            else:
+                message = f"Your eval returned with error code {return_code} \n```\n{output}\n```"
+
+            await old_response.edit(
+                content=message, allowed_mentions=discord.AllowedMentions.none()
+            )
+        await reaction.message.clear_reactions()
 
 
 def run_python(code: str) -> subprocess.CompletedProcess[str]:
