@@ -25,7 +25,8 @@ class Eval(commands.Cog):
         )
 
         async def delete_callback(interaction: discord.Interaction):
-            await ctx.message.delete()
+            await bot_message.delete()
+            view._disable_all()
 
         delete_button.callback = delete_callback
         view.add_item(delete_button)
@@ -61,7 +62,8 @@ class Eval(commands.Cog):
             output = f"{output[:500]} \n\nOutput limited to 500 characters."
         else:
             output = output or "(No output)"
-        await ctx.send(
+
+        bot_message = await ctx.send(
             f"Your code returned with code: {docker_sub.returncode}. ```{output}```",
             allowed_mentions=discord.AllowedMentions.none(),
             view=view,
