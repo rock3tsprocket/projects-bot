@@ -68,7 +68,27 @@ class Eval(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
             view=view,
         )
-        await ctx.message.add_reaction("\U0001f501")
+
+    @commands.Cog.listener(name="Eval listener")
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
+        if before.content.startswith("!e"):
+            await after.add_reaction("\U0001f501")
+
+    @commands.Cog.listener()
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: discord.User | discord.Member
+    ) -> None:
+        if user.bot:
+            return
+        if (
+            user == reaction.message.author
+            and reaction.message.content.startswith("!e")
+            and str(reaction.emoji) == "\U0001f501"
+        ):
+            await self.bot.process_commands(reaction.message)
+            await reaction.message.clear_reactions()
 
 
 def run_python(code: str) -> subprocess.CompletedProcess[str]:
