@@ -107,7 +107,14 @@ class Eval(commands.Cog):
         ):
             return
 
-        code = reaction.message.content[len("!e ") :].strip()
+        code = None
+        for prefix in ["!e ", "!eval "]:
+            if reaction.message.content.startswith(prefix):
+                code = reaction.message.content[len(prefix) :].strip()
+                break
+
+        if code is None:
+            return
 
         old_response = None
         async for msg in reaction.message.channel.history(limit=20):
