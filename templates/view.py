@@ -4,6 +4,8 @@ from asyncio.base_events import _interleave_addrinfos
 import discord
 from discord.ui.select import BaseSelect
 
+from templates.embeds import correctUsageEmbed
+
 
 class BaseView(discord.ui.View):
     interaction: discord.Interaction | None = None
@@ -72,7 +74,5 @@ class CorrectUsageMenu(BaseView):
         self, interaction: discord.Interaction, select: discord.ui.Select[Self]
     ) -> None:
         await interaction.response.defer()
-        await interaction.followup.send(
-            f"The correct usage for {select.values[0]} eval is:"
-        )
+        await interaction.followup.send(embed=correctUsageEmbed(select.values[0]))
         self._disable_all()
