@@ -3,6 +3,11 @@ import discord
 from discord.ext import commands
 from templates.models import Warn
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Warns(commands.Cog):
     def __init__(self, bot: Hux):
