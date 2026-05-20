@@ -68,9 +68,9 @@ def correctUsageEmbed(language: str) -> discord.Embed:
             value=r"\`\`\`py" + "\ncode here \n" + r"\`\`\`",
             inline=False,
         )
-        embed.add_field(name="Example", value='```py \nprint("Hello, World!") \n```')
+        embed.add_field(name="Example", value='```py\nprint("Hello, World!") \n```')
 
-    if language == "Python":
+    elif language == "Go":
         embed.add_field(
             name="\u200b",
             value=r"\`\`\`go" + "\npackage main \ncode here \n" + r"\`\`\`",
@@ -78,7 +78,7 @@ def correctUsageEmbed(language: str) -> discord.Embed:
         )
         embed.add_field(
             name="Example",
-            value="```go \npackage main \n import 'fmt' \n func main() {\n  fmt.Println('Hello, World!') \n```",
+            value="```go\npackage main \n import 'fmt' \n func main() {\n  fmt.Println('Hello, World!') \n```",
             inline=False,
         )
 
@@ -90,7 +90,7 @@ def correctUsageEmbed(language: str) -> discord.Embed:
         )
         embed.add_field(
             name="Example",
-            value="```bf \n++++++++++++[>+++++++++<-]>.---.--.++++++.------------.>++++++++[>++++<-]>.<<+.-.+++++++++++..+++++++. \n```",
+            value="```bf\n++++++++++++[>+++++++++<-]>.---.--.++++++.------------.>++++++++[>++++<-]>.<<+.-.+++++++++++..+++++++. \n```",
             inline=False,
         )
 
