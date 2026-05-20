@@ -6,6 +6,8 @@ import functools
 
 from typing import TYPE_CHECKING
 
+from templates.view import BaseView
+
 if TYPE_CHECKING:
     from main import Hux
 
@@ -17,6 +19,17 @@ class Eval(commands.Cog):
     @commands.command(aliases=["e"])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def eval(self, ctx: commands.Context, *, code: str | None = None) -> None:
+        view = BaseView(ctx.author)
+        delete_button = discord.ui.Button(
+            label="Delete", style=discord.ButtonStyle.danger
+        )
+
+        async def delete_callback(interaction: discord.Interaction):
+            await ctx.message.delete()
+
+        delete_button.callback = delete_callback
+        view.add_item(delete_button)
+
         if code is None:
             await ctx.send(
                 "Correct usage: \n\n"
@@ -51,6 +64,7 @@ class Eval(commands.Cog):
         await ctx.send(
             f"Your code returned with code: {docker_sub.returncode}. ```{output}```",
             allowed_mentions=discord.AllowedMentions.none(),
+            view=view,
         )
 
 
