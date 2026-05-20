@@ -21,13 +21,14 @@ class Testing(commands.Cog):
 
     @app_commands.command(name="viewtest", description="View testing.")
     async def viewtest(self, interaction: discord.Interaction) -> None:
-        view = BaseView
+        view = BaseView(interaction.user)
         view.add_item(
             discord.ui.Button(label="Testing", style=discord.ButtonStyle.blurple)
         )
-        view.message = await interaction.response.send_message(
-            "This is supposed to be a view", view=view
+        await interaction.response.send_message(
+            "This is supposed to be a view!", view=view
         )
+        view.message = await interaction.original_response()
 
 
 async def setup(bot: Hux):
