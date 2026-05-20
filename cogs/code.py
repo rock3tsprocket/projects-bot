@@ -4,9 +4,14 @@ import subprocess
 import asyncio
 import functools
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Eval(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
     @commands.command(aliases=["e"])
@@ -130,5 +135,5 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Eval(bot))

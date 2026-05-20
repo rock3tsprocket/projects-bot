@@ -1,8 +1,13 @@
 from discord.ext import commands
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Projects(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
         # Example data (you can expand this)
@@ -52,5 +57,5 @@ class Projects(commands.Cog):
         await ctx.send(f"Latest release for **{project_name}**:\n{link}")
 
 
-async def setup(bot):
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Projects(bot))

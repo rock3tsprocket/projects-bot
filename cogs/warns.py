@@ -5,7 +5,7 @@ from templates.models import Warn
 
 
 class Warns(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
     @commands.group(invoke_without_command=True, aliases=["w"])
@@ -65,5 +65,5 @@ class Warns(commands.Cog):
         )
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Warns(bot))
