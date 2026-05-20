@@ -2,6 +2,7 @@ import traceback
 from typing import Self
 from asyncio.base_events import _interleave_addrinfos
 import discord
+from discord.ui import view
 from discord.ui.select import BaseSelect
 
 from templates.embeds import correctUsageEmbed
@@ -76,3 +77,4 @@ class CorrectUsageMenu(BaseView):
         await interaction.response.defer()
         await interaction.followup.send(embed=correctUsageEmbed(select.values[0]))
         self._disable_all()
+        await self._edit(view=self)
