@@ -2,9 +2,14 @@ import random
 import discord
 from discord.ext import commands
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Fun(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux) -> None:
         self.bot = bot
 
     @commands.command()
@@ -53,5 +58,5 @@ class Fun(commands.Cog):
                     await message.reply(random.choice(gif_responses))
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Fun(bot))

@@ -3,9 +3,14 @@ import discord
 from discord.ext import commands
 from templates.models import Warn
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Warns(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
     @commands.group(invoke_without_command=True, aliases=["w"])
@@ -65,5 +70,5 @@ class Warns(commands.Cog):
         )
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Warns(bot))

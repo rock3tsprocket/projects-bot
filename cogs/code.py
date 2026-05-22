@@ -4,26 +4,22 @@ import subprocess
 import asyncio
 import functools
 from time import time as currenttime
+import re
+
+from typing import TYPE_CHECKING
+
+from templates.view import BaseView, CorrectUsageMenu
+
+if TYPE_CHECKING:
+    from main import Hux
 
 
 class Eval(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
-    @commands.command(aliases=["e"])
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def eval(self, ctx: commands.Context, *, code: str | None = None) -> None:
-        if code is None:
-            await ctx.send(
-                "Correct usage: \n\n"
-                + r"\`\`\`py/go/bf"
-                + "\n"
-                + "<code here>"
-                + "\n"
-                + r"\`\`\` [stdin if brainf**k]"
-            )
-            return
-        elif code.startswith("```py"):
+    async def eval_logic(self, code: str) -> tuple[str, int]:
+        if code.startswith("```py"):
             loop = asyncio.get_event_loop()
             docker_sub = await loop.run_in_executor(
                 None, functools.partial(run_python, code)
@@ -34,29 +30,114 @@ class Eval(commands.Cog):
                 None, functools.partial(run_go, code)
             )
         elif code.startswith("```bf"):
-            bfinput = code[code.find("\n```")+4:]
+            bfinput = code[code.find("\n```") + 4 :]
             if bfinput.startswith(" "):
                 bfinput = bfinput[1:]
             if bfinput == code[3:]:
                 bfinput = ""
             loop = asyncio.get_event_loop()
             docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_bf, code, bfinput))
+                None, functools.partial(run_bf, code, bfinput)
+            )
         else:
-            await ctx.send("Please, use the proper formatting.")
-            return
+            return "Please, use proper formatting", 1
 
         output = docker_sub.stdout
+        return_code = docker_sub.returncode
+
         if docker_sub.stderr:
             output += f"\nstderr: {docker_sub.stderr}"
+
         if len(output) >= 500:
             output = f"{output[:500]} \n\nOutput limited to 500 characters."
+
         else:
             output = output or "(No output)"
-        await ctx.send(
-            f"Your code returned with code: {docker_sub.returncode}. ```\n{output}\n```",
-            allowed_mentions=discord.AllowedMentions.none(),
+
+        return output, return_code
+
+    def _format_output(self, output: str, return_code: int) -> str:
+        if return_code == 0:
+            return f"Your eval was succesful. \n```\n{output}\n```"
+        return (
+            f"Your eval returned with error code: {return_code}. \n```\n{output}\n```"
         )
+
+    @commands.command(aliases=["e"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def eval(self, ctx: commands.Context, *, code: str | None = None) -> None:
+        view = BaseView(ctx.author, timeout=30.0)
+        delete_button = discord.ui.Button(
+            label="Delete", style=discord.ButtonStyle.danger
+        )
+
+        async def delete_callback(interaction: discord.Interaction):
+            await bot_message.delete()
+            view._disable_all()
+
+        delete_button.callback = delete_callback
+        view.add_item(delete_button)
+
+        if code is None:
+            view = CorrectUsageMenu(ctx.author)
+            view.message = await ctx.send(view=view)
+            return
+
+        output, return_code = await self.eval_logic(code)
+
+        message = self._format_output(output=output, return_code=return_code)
+
+        bot_message = await ctx.send(
+            message,
+            allowed_mentions=discord.AllowedMentions.none(),
+            view=view,
+        )
+        view.message = bot_message
+
+    @commands.Cog.listener()
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
+        if before.content.startswith("!e"):
+            await after.add_reaction("\U0001f501")
+
+    @commands.Cog.listener()
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: discord.User | discord.Member
+    ) -> None:
+        if user.bot:
+            return
+        if not (
+            reaction.message.content.startswith("!e")
+            and str(reaction.emoji) == "\U0001f501"
+        ):
+            return
+
+        code = None
+        match = re.match(r"^!(?:eval|e)\s+([\s\S]+)", reaction.message.content)
+        if match is None:
+            return
+
+        code = match.group(1).strip()
+
+        if code is None:
+            return
+
+        old_response = None
+        async for msg in reaction.message.channel.history(limit=20):
+            if msg.author == self.bot.user:
+                old_response = msg
+                break
+
+        output, return_code = await self.eval_logic(code)
+
+        if old_response:
+            message = self._format_output(output=output, return_code=return_code)
+
+            await old_response.edit(
+                content=message, allowed_mentions=discord.AllowedMentions.none()
+            )
+        await reaction.message.clear_reactions()
 
 
 def run_python(code: str) -> subprocess.CompletedProcess[str]:
@@ -67,9 +148,9 @@ def run_python(code: str) -> subprocess.CompletedProcess[str]:
             "--network",
             "none",
             "--rm",
-            "--memory=50m",
-            "--memory-swap=50m",
-            "--cpus=0.5",
+            "--memory=100m",
+            "--memory-swap=101m",
+            "--cpus=2",
             "--security-opt",
             "no-new-privileges",
             "--read-only",
@@ -139,17 +220,18 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
         timeout=50,
     )
 
+
 def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
     starttime = currenttime()
-    cells = bytearray(30000) # Memory (30kb)
-    bfinput += "\0" # Add a null character to the end of the input
-    inputptr = 0 # Pointer that points to a character in the input 
-    dp = 0 # Data pointer
-    
-    stack = [] # Bracket nest stack
-    jump = [None]*len(code) # Jump table
-    ip = 0 # Instruction pointer
-    output = "" # Output
+    cells = bytearray(30000)  # Memory (30kb)
+    bfinput += "\0"  # Add a null character to the end of the input
+    inputptr = 0  # Pointer that points to a character in the input
+    dp = 0  # Data pointer
+
+    stack = []  # Bracket nest stack
+    jump = [None] * len(code)  # Jump table
+    ip = 0  # Instruction pointer
+    output = ""  # Output
     status = subprocess.CompletedProcess(bfinput, 0, "", "")
 
     if code.count("[") != code.count("]"):
@@ -158,10 +240,10 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
 
     # totally not taken from https://stackoverflow.com/a/3041005
     if status.returncode == 0:
-        for i,o in enumerate(code):
-            if o=='[':
+        for i, o in enumerate(code):
+            if o == "[":
                 stack.append(i)
-            elif o==']':
+            elif o == "]":
                 if len(stack) == 0:
                     status.stderr = "Brackets are unbalanced"
                     status.returncode = 1
@@ -177,11 +259,11 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
             case "-":
                 cells[dp] = (cells[dp] - 1) % 256
             case ">":
-                dp+=1
+                dp += 1
                 if dp < -1 or dp > 29999:
                     dp -= 30000
             case "<":
-                dp-=1
+                dp -= 1
                 if dp < -1 or dp > 29999:
                     dp += 30000
             case ".":
@@ -196,12 +278,13 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
                 if cells[dp]:
                     ip = jump[ip]
                     continue
-        ip+=1
+        ip += 1
         if currenttime() - starttime > 30:
             status.returncode = 124
             break
     status.stdout = output
     return status
 
-async def setup(bot) -> None:
+
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Eval(bot))

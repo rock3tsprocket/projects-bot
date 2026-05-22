@@ -2,9 +2,14 @@ import discord
 from discord.ext import commands
 from templates import embeds
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Info(commands.Cog):
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: Hux) -> None:
         self.bot = bot
 
     @commands.command()
@@ -29,7 +34,9 @@ class Info(commands.Cog):
         await ctx.send(embed=await embeds.serverEmbed(ctx))
 
     @info.group(invoke_without_command=True)
-    async def role(self, ctx: commands.Context, target: discord.Role = None) -> None:
+    async def role(
+        self, ctx: commands.Context, target: discord.Role | None = None
+    ) -> None:
         if ctx.invoked_subcommand is None:
             if target:
                 await ctx.send(embed=await embeds.roleEmbed(target))
@@ -43,9 +50,9 @@ class Info(commands.Cog):
         await ctx.send(embed=await embeds.roleListEmbed(ctx))
 
     @role.command()
-    async def count(self, ctx: commands.Context, *, group: str = None) -> None:
+    async def count(self, ctx: commands.Context, *, group: str | None = None) -> None:
         pass
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Info(bot))
