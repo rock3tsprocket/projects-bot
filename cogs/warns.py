@@ -1,19 +1,24 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 from templates.models import Warn
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Warns(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
     @commands.group(invoke_without_command=True, aliases=["w"])
     @commands.has_permissions(moderate_members=True)
     async def warn(
-        self, ctx, user: discord.Member = None, *, reason: str = None
+        self, ctx, user: discord.Member | None = None, *, reason: str | None = None
     ) -> None:
-        current_date = datetime.utcnow().strftime("%y-%m-%d")
+        current_date = datetime.now(timezone.utc).strftime("%y-%m-%d")
         moderator = ctx.author
         if ctx.invoked_subcommand is None and user is None:
             await ctx.send("`!help warn` for more information. ")
@@ -65,5 +70,5 @@ class Warns(commands.Cog):
         )
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Warns(bot))

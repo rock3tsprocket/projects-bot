@@ -1,10 +1,17 @@
 import discord
-import datetime
+from discord import app_commands
 from discord.ext import commands
+import datetime
+from templates.models import parse_time
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
 
 
 class Moderation(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
     @commands.command()
@@ -19,18 +26,25 @@ class Moderation(commands.Cog):
         await user.kick(reason=reason)
         await ctx.send(f"{user.name} has been kicked. \nReason: {reason}")
 
-    @commands.command()
-    @commands.has_permissions(moderate_members=True)
-    async def timeout(
+    @app_commands.command(
+        name="selftimeout",
+        description="times out an user for a determined period of time.",
+    )
+    @app_commands.describe(
+        duration="The amount of time the user will be timed out.",
+        reason="The reason for this user's time out",
+    )
+    @app_commands.checks.has_permissions(moderate_members=True)
+    async def selftimeout(
         self,
-        ctx: commands.Context,
+        interaction: discord.Interaction,
         user: discord.Member,
-        duration: int,
+        duration: str,
         *,
         reason: str = "No reason provided.",
     ) -> None:
-        await user.timeout(datetime.timedelta(minutes=duration), reason=reason)
-        await ctx.send(
+        await user.timeout(datetime.timedelta(**parse_time(duration)), reason=reason)
+        await interaction.response.send_message(
             f"{user.name} has been timed out for {duration} minutes. \nReason: {reason}"
         )
 
@@ -84,5 +98,5 @@ class Moderation(commands.Cog):
         await ctx.send(f"The role {role.name} has been removed from {user.name}.")
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Moderation(bot))

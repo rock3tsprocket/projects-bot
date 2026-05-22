@@ -2,9 +2,14 @@ import discord
 from discord.ext import commands
 from templates.models import Snippet
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main import Hux
+
 
 class Snippets(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Hux):
         self.bot = bot
 
     async def get_snippet(
@@ -34,7 +39,7 @@ class Snippets(commands.Cog):
         return message
 
     @commands.group(invoke_without_command=True, aliases=["s"])
-    async def snippet(self, ctx: commands.Context, title: str = None) -> None:
+    async def snippet(self, ctx: commands.Context, title: str | None = None) -> None:
         if ctx.invoked_subcommand is None and title is None:
             await ctx.send("`!help snippet` for more information. ")
         elif title is not None:
@@ -151,5 +156,5 @@ class Snippets(commands.Cog):
         await ctx.send(message)
 
 
-async def setup(bot) -> None:
+async def setup(bot: Hux) -> None:
     await bot.add_cog(Snippets(bot))
