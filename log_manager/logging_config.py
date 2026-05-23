@@ -1,4 +1,5 @@
 import json
+from logging import WARNING
 
 from logging_manager import LOGFILE
 
@@ -38,7 +39,10 @@ loggin_config = {
             "respect_handler_level": True,
         },
     },
-    "loggers": {"root": {"level": "DEBUG", "handlers": ["queue_handler"]}},
+    "loggers": {
+        "root": {"level": "DEBUG", "handlers": ["queue_handler"]},
+        "discord": {"level": "WARNING", "propagate": False},
+    },
 }
 
 with open("log_manager/logging_config.json", "w") as f:

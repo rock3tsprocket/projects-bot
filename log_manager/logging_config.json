@@ -43,6 +43,10 @@
    "handlers": [
     "queue_handler"
    ]
+  },
+  "discord": {
+   "level": "WARNING",
+   "propagate": false
   }
  }
 }
