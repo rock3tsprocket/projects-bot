@@ -42,6 +42,11 @@ class Eval(commands.Cog):
             docker_sub = await loop.run_in_executor(
                 None, functools.partial(run_bf, code, bfinput)
             )
+        elif code.startswith("```rs"):
+            loop = asyncio.get_event_loop()
+            docker_sub - await loop.run_in_executor(
+                None, functools.partial(run_rust, code)
+            )
         else:
             return "Please, use proper formatting", 1
 
@@ -321,19 +326,12 @@ def run_rust(code: str) -> subprocess.CompletedProcess[str]:
             "100",
             "--cap-drop",
             "all",
-            "-e",
-            "HOME=/tmp",
-            "-e",
-            "GOCACHE=/tmp/go-cache",
-            "-e",
-            "GOPATH=/tmp/gopath",
-            "-i",
-            "golang:alpine",
+            "rust:alpine",
             "timeout",
             "45",
             "/bin/sh",
             "-c",
-            "cat > /tmp/code.go && go run /tmp/code.go",
+            "cd /tmp && cargo init . && cat > src/main.rs && cargo run -q",
         ],
         input=code[6:-3],
         capture_output=True,
