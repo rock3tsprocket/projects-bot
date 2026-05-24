@@ -130,7 +130,7 @@ class Eval(commands.Cog):
         code = match.group(1).strip()
 
         if code is None:
-            logger.error("Eval rerun code passed as None")
+            logger.error("Eval re-run code passed as None")
             return
 
         old_response = None
