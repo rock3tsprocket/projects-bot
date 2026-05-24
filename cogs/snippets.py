@@ -134,20 +134,25 @@ class Snippets(commands.Cog):
     @app_commands.describe(title="Title of the snippet to be locked.")
     async def lock(self, interaction: discord.Interaction, title: str) -> None:
         snippet = await self.get_snippet(interaction, title)
-        if (
-            snippet.author_id != interaction.user.id
-            and not interaction.permissions.manage_messages
-        ):
-            await interaction.response.send_message(
-                f"You're not the author of {title} and don't have permission to do this. "
-            )
-        elif snippet.locked:
-            await interaction.response.send_message("This snippet is already locked. ")
+        if snippet is not None:
+            if (
+                snippet.author_id != interaction.user.id
+                and not interaction.permissions.manage_messages
+            ):
+                await interaction.response.send_message(
+                    f"You're not the author of {title} and don't have permission to do this. "
+                )
+            elif snippet.locked:
+                await interaction.response.send_message(
+                    "This snippet is already locked. "
+                )
+            else:
+                await self.bot.db.update("snippets", "locked", True, "title", title)
+                await interaction.response.send_message(
+                    f"Snippet {title} has been locked. "
+                )
         else:
-            await self.bot.db.update("snippets", "locked", True, "title", title)
-            await interaction.response.send_message(
-                f"Snippet {title} has been locked. "
-            )
+            await interaction.response.send_message("Snippet not found.")
 
     @snippets_group.command(
         description="Unlocks a snippet so it can be edited or deleted."
