@@ -35,7 +35,7 @@ class Fun(commands.Cog):
     @fun.command()
     @commands.has_role(1508140013345575133)
     async def say(self, ctx: commands.Context, *, arg: str) -> None:
-        await ctx.send(arg)
+        await ctx.send(arg, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
