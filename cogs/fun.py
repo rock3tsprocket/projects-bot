@@ -14,7 +14,7 @@ class Fun(commands.Cog):
 
     @commands.hybrid_group(name="fun", fallback="get")
     async def fun(self, ctx: commands.Context) -> None:
-        await ctx.send(f"{ctx.author} is" + random.choice(["fun.", "not fun."]))
+        await ctx.send(f"{ctx.author} is " + random.choice(["fun.", "not fun."]))
 
     @fun.command()
     async def hello(self, ctx: commands.Context) -> None:
