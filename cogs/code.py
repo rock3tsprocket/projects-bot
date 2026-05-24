@@ -44,7 +44,7 @@ class Eval(commands.Cog):
             )
         elif code.startswith("```rs"):
             loop = asyncio.get_event_loop()
-            docker_sub - await loop.run_in_executor(
+            docker_sub = await loop.run_in_executor(
                 None, functools.partial(run_rust, code)
             )
         else:
