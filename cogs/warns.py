@@ -31,18 +31,21 @@ class Warns(commands.Cog):
         current_date = datetime.now(timezone.utc).strftime("%y-%m-%d")
         moderator = interaction.user
         if user:
-            logging.info(f"{interaction.user} has warned {user} for {reason}")
-            await self.bot.db.insert(
-                "warns", (user.id, reason, moderator.id, current_date, None)
-            )
-            embed = discord.Embed(title="_*Warning*_", color=discord.Color.red())
-            embed.set_thumbnail(
-                url="https://raw.githubusercontent.com/Saber0324/projects-bot/main/assets/warn.png?v=2"
-            )
-            embed.add_field(name="Reason", value=reason, inline=True)
-            embed.set_footer(text=f"Warned by {moderator.name} at {current_date}")
-            await interaction.response.send_message(embed=embed)
-            return
+            if interaction.permissions.moderate_members:
+                logging.info(f"{interaction.user} has warned {user} for {reason}")
+                await self.bot.db.insert(
+                    "warns", (user.id, reason, moderator.id, current_date, None)
+                )
+                embed = discord.Embed(title="_*Warning*_", color=discord.Color.red())
+                embed.set_thumbnail(
+                    url="https://raw.githubusercontent.com/Saber0324/projects-bot/main/assets/warn.png?v=2"
+                )
+                embed.add_field(name="Reason", value=reason, inline=True)
+                embed.set_footer(text=f"Warned by {moderator.name} at {current_date}")
+                await interaction.response.send_message(embed=embed)
+                return
+            else:
+                raise app_commands.MissingPermissions(["moderate_members"])
 
     @warn_group.command(description="Displays a list of all warns given to an user.")
     @app_commands.describe(user="User to display warns from.")
@@ -67,18 +70,21 @@ class Warns(commands.Cog):
 
     @warn_group.command(description="Deletes a warn by its id.")
     @app_commands.describe(warn_id="ID of the warn to be deleted.")
-    @commands.has_permissions(moderate_members=True)
     async def delete(self, interaction: discord.Interaction, warn_id: int) -> None:
         result = await self.bot.db.get_one("warns", "warn_id", warn_id)
-        if result is None:
+        if result is not None:
+            if interaction.permissions.moderate_members:
+                warn = Warn(*result)
+                await self.bot.db.delete("warns", "warn_id", warn_id)
+                logging.info(f"{interaction.user} has deleted warn id {warn.warn_id}")
+                await interaction.response.send_message(
+                    f"Warning ID:{warn.warn_id} for {warn.reason} deleted from {await self.bot.fetch_user(warn.user_id)}"
+                )
+            else:
+                raise app_commands.MissingPermissions(["moderate_members"])
+        else:
             await interaction.response.send_message("This warning does not exist. ")
             return
-        warn = Warn(*result)
-        await self.bot.db.delete("warns", "warn_id", warn_id)
-        logging.info(f"{interaction.user} has deleted warn id {warn.warn_id}")
-        await interaction.response.send_message(
-            f"Warning ID:{warn.warn_id} for {warn.reason} deleted from {await self.bot.fetch_user(warn.user_id)}"
-        )
 
 
 async def setup(bot: Hux) -> None:
