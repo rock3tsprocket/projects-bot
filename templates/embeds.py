@@ -102,7 +102,7 @@ def correctUsageEmbed(language: str) -> discord.Embed:
         )
         embed.add_field(
             name="Example",
-            value='```rs\nfn main()\n  println!("Hello, World!")\n```',
+            value='```rs\nfn main() {\n  println!("Hello, World!");\n}\n```',
             inline=False,
         )
 
