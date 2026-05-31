@@ -92,6 +92,9 @@ class Hux(commands.Bot):
                 await interaction.response.send_message(
                     f"The command {command_name} was not found."
                 )
+            case _:
+                await interaction.response.send_message("An unexpected error ocurred")
+                logger.error(f"Unhandled exception: {error}")
 
     async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
         if ctx.command is not None:
@@ -107,6 +110,9 @@ class Hux(commands.Bot):
         match error:
             case commands.MissingAnyRole():
                 await ctx.send("You're missing a role required to access this command.")
+            case _:
+                await ctx.send("An unexpected error ocurred")
+                logger.error(f"Unhandled exception: {error}")
 
 
 async def main() -> None:
