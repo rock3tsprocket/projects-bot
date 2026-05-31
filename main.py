@@ -1,10 +1,11 @@
 import logging
 import os
-from pathlib import Path
 import asyncio
+import discord
+from pathlib import Path
 from dotenv import load_dotenv
 from discord.ext import commands
-import discord
+from discord import app_commands
 
 from data.database import Database
 from log_manager.logging_manager import setup_loggin
@@ -57,7 +58,7 @@ class Hux(commands.Bot):
         synced = await self.tree.sync()
         logger.info(f"Synced {len(synced)} commands.")
 
-    async def on_command_error(
+    async def on_app_command_error(
         self, interaction: discord.Interaction, error: Exception
     ) -> None:
         if interaction.command is not None:
@@ -68,38 +69,28 @@ class Hux(commands.Bot):
         logging.error(f"Error in command: {command_name}. {error}")
 
         match error:
-            case commands.CommandInvokeError():
+            case app_commands.CommandInvokeError():
                 error = error.original
-            case commands.MissingPermissions():
+            case app_commands.MissingPermissions():
                 await interaction.response.send_message(
                     "You don't have permission to do this!"
-                )
-            case commands.MemberNotFound():
-                await interaction.response.send_message("User not found.")
-            case commands.MissingRequiredArgument():
-                await interaction.response.send_message(
-                    f"Missing argument: `{error.param.name}`."
                 )
             case discord.Forbidden():
                 await interaction.response.send_message(
                     "I don't have permission to do that."
                 )
-            case commands.BadArgument():
+            case app_commands.CommandOnCooldown():
                 await interaction.response.send_message(
-                    f"The command {command_name} has a bad argument. Check correct usage."
+                    f"The command {command_name} is still on cooldown."
                 )
-            case commands.NotOwner():
-                await interaction.response.send_message(
-                    "Only the bot owner can access this command."
-                )
-            case commands.CommandOnCooldown():
-                await interaction.response.send_message(f"The command {command_name}")
-            case commands.NoPrivateMessage():
+            case app_commands.NoPrivateMessage():
                 await interaction.response.send_message(
                     f"The command {command_name} can only be used in a server"
                 )
-            case commands.CommandNotFound():
-                pass
+            case app_commands.CommandNotFound():
+                await interaction.response.send_message(
+                    f"The command {command_name} was not found."
+                )
 
 
 async def main() -> None:
