@@ -113,12 +113,14 @@ def correctUsageEmbed(language: str) -> discord.Embed:
 
 def github_repo_embed(repo: dict):
     if repo is not None:
-        date = datetime.strptime(repo["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        date = int(
+            datetime.strptime(repo["created_at"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        )
         embed = discord.Embed(
             title=f"{repo['name']}",
             url=repo["url"],
             color=discord.Color.random(),
-            description=f"{repo['description']}\n\nCreated at {date.strftime('%B %d %Y')}",
+            description=f"{repo['description']}\n\nCreated at t<:{date}:D>",
         )
         embed.set_thumbnail(url=repo["owner_avatar"])
         embed.set_footer(text=repo["license_name"])
