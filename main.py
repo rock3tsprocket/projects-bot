@@ -73,27 +73,23 @@ class Hux(commands.Bot):
 
         match error:
             case app_commands.MissingPermissions():
-                await interaction.response.send_message(
-                    "You don't have permission to do this!"
-                )
+                await interaction.followup.send("You don't have permission to do this!")
             case discord.Forbidden():
-                await interaction.response.send_message(
-                    "I don't have permission to do that."
-                )
+                await interaction.followup.send("I don't have permission to do that.")
             case app_commands.CommandOnCooldown():
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"The command {command_name} is still on cooldown."
                 )
             case app_commands.NoPrivateMessage():
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"The command {command_name} can only be used in a server"
                 )
             case app_commands.CommandNotFound():
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"The command {command_name} was not found."
                 )
             case _:
-                await interaction.response.send_message("An unexpected error ocurred")
+                await interaction.followup.send("An unexpected error ocurred")
                 logger.error(f"Unhandled exception: {error}")
 
     async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
