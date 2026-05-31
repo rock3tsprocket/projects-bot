@@ -1,5 +1,4 @@
 import os
-import asyncio
 import discord
 
 
@@ -32,9 +31,8 @@ class Projects(commands.Cog):
         self, interaction: discord.Interaction, user: str, repository: str | None = None
     ) -> None:
         searched_item = Request(user, repository)
-        await interaction.response.send_message(
-            str(asyncio.run(searched_item.get_data()))
-        )
+        data = await searched_item.get_data()
+        await interaction.response.send_message(str(data))
 
 
 class Request:
