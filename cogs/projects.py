@@ -95,6 +95,7 @@ class Request:
                     "url": data["url"],
                     "description": data["description"],
                     "created_at": data["created_at"],
+                    "owner_avatar": data["owner"]["avatar_url"],
                 }
 
 
