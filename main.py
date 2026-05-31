@@ -66,7 +66,7 @@ class Hux(commands.Bot):
         else:
             command_name = "Unkown command name"
 
-        logging.error(f"Error in command: {command_name}. {error}")
+        logger.error(f"Error in command {command_name}. {error}")
 
         match error:
             case app_commands.CommandInvokeError():
@@ -91,6 +91,18 @@ class Hux(commands.Bot):
                 await interaction.response.send_message(
                     f"The command {command_name} was not found."
                 )
+
+    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        if ctx.command is not None:
+            command_name = ctx.command.name
+        else:
+            command_name = "Unkown command name"
+
+        logger.error(f"Error in command {command_name}. {error}")
+
+        match error:
+            case commands.MissingAnyRole():
+                await ctx.send("You're missing a role required to access this command.")
 
 
 async def main() -> None:
