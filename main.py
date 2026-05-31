@@ -66,7 +66,9 @@ class Hux(commands.Bot):
         else:
             command_name = "Unknown command name"
 
-        logger.error(f"Error in app command {command_name}. {error}")
+        logger.error(
+            f"Error in app command {command_name} invoked by {interaction.user}. {error}"
+        )
 
         if isinstance(error, app_commands.CommandInvokeError):
             error = error.original
@@ -98,7 +100,9 @@ class Hux(commands.Bot):
         else:
             command_name = "Unknown command name"
 
-        logger.error(f"Error in command {command_name}. {error}")
+        logger.error(
+            f"Error in command {command_name} invoked by user {ctx.author}. {error}"
+        )
 
         if isinstance(error, commands.CommandInvokeError):
             error = error.original
