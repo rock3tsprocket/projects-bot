@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 import asyncio
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -10,7 +11,7 @@ from log_manager.logging_manager import setup_loggin
 
 logger = logging.getLogger(__name__)
 
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+load_dotenv(Path(__file__).parent / ".env")
 
 COGS = [
     "cogs.info",
@@ -21,6 +22,7 @@ COGS = [
     "cogs.warns",
     "cogs.testing",
     "cogs.code",
+    "cogs.roles",
 ]
 
 
@@ -55,9 +57,11 @@ class Hux(commands.Bot):
         synced = await self.tree.sync()
         logger.info(f"Synced {len(synced)} commands.")
 
-    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        if ctx.command is not None:
-            command_name = ctx.command.name
+    async def on_command_error(
+        self, interaction: discord.Interaction, error: Exception
+    ) -> None:
+        if interaction.command is not None:
+            command_name = interaction.command.name
         else:
             command_name = "Unkown command name"
 
@@ -67,23 +71,31 @@ class Hux(commands.Bot):
             case commands.CommandInvokeError():
                 error = error.original
             case commands.MissingPermissions():
-                await ctx.send("You don't have permission to do this!")
+                await interaction.response.send_message(
+                    "You don't have permission to do this!"
+                )
             case commands.MemberNotFound():
-                await ctx.send("User not found.")
+                await interaction.response.send_message("User not found.")
             case commands.MissingRequiredArgument():
-                await ctx.send(f"Missing argument: `{error.param.name}`.")
+                await interaction.response.send_message(
+                    f"Missing argument: `{error.param.name}`."
+                )
             case discord.Forbidden():
-                await ctx.send("I don't have permission to do that.")
+                await interaction.response.send_message(
+                    "I don't have permission to do that."
+                )
             case commands.BadArgument():
-                await ctx.send(
+                await interaction.response.send_message(
                     f"The command {command_name} has a bad argument. Check correct usage."
                 )
             case commands.NotOwner():
-                await ctx.send("Only the bot owner can access this command.")
+                await interaction.response.send_message(
+                    "Only the bot owner can access this command."
+                )
             case commands.CommandOnCooldown():
-                await ctx.send(f"The command {command_name}")
+                await interaction.response.send_message(f"The command {command_name}")
             case commands.NoPrivateMessage():
-                await ctx.send(
+                await interaction.response.send_message(
                     f"The command {command_name} can only be used in a server"
                 )
             case commands.CommandNotFound():
@@ -91,9 +103,12 @@ class Hux(commands.Bot):
 
 
 async def main() -> None:
-    token = str(os.getenv("TOKEN"))
-    async with Hux("!") as hux:
-        await hux.start(token)
+    token = os.getenv("TOKEN")
+    if token is not None:
+        async with Hux("!") as hux:
+            await hux.start(token)
+    else:
+        logger.error("TOKEN not found.")
 
 
 asyncio.run(main())
