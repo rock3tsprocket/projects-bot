@@ -37,12 +37,13 @@ class Projects(commands.Cog):
     ) -> None:
         searched_repo = Request(user, repository)
         data = await searched_repo.get_data()
-        if data != "Not found":
-            if repository is not None:
-                if data is not None:
-                    first_repo = next(iter((data.values())))
-                    embed = github_repo_embed(first_repo)
-                    await interaction.response.send_message(embed=embed)
+        if data is not None and data != "Not found":
+            if "name" in data:
+                first_repo = data
+            else:
+                first_repo = next(iter((data.values())))
+                embed = github_repo_embed(first_repo)
+                await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(
                 "The searched repository was not found."
