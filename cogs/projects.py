@@ -32,7 +32,9 @@ class Projects(commands.Cog):
         self, interaction: discord.Interaction, user: str, repository: str | None = None
     ) -> None:
         searched_item = Request(user, repository)
-        await interaction.response.send_message(asyncio.run(searched_item.get_data()))
+        await interaction.response.send_message(
+            str(asyncio.run(searched_item.get_data()))
+        )
 
 
 class Request:
