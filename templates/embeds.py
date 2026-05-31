@@ -121,5 +121,5 @@ def github_repo_embed(repo: dict):
             description=f"{repo['description']}\n{repo['license_name']}",
         )
         embed.set_thumbnail(url=repo["owner_avatar"])
-        embed.set_footer(text=f"Created at: {date.strftime('%B %d %Y')}")
+        embed.set_footer(text=f"Created at {date.strftime('%B %d %Y')}")
         return embed
