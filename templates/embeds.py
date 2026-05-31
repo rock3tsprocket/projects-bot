@@ -1,3 +1,4 @@
+from datetime import datetime
 import discord
 from discord.ext import commands
 
@@ -112,6 +113,7 @@ def correctUsageEmbed(language: str) -> discord.Embed:
 
 def github_repo_embed(repo: dict):
     if repo is not None:
+        date = datetime.strptime(repo["created_at"], "%Y-%m-%dT%H:%M:%SZ")
         embed = discord.Embed(
             title=f"{repo['name']}",
             url=repo["url"],
@@ -119,5 +121,5 @@ def github_repo_embed(repo: dict):
             description=f"{repo['description']}\n{repo['license_name']}",
         )
         embed.set_thumbnail(url=repo["owner_avatar"])
-        embed.set_footer(text=f"Created at: {repo['created_at']}")
+        embed.set_footer(text=f"Created at: {date.strftime('%B %d %Y')}")
         return embed
