@@ -64,7 +64,7 @@ class Hux(commands.Bot):
         if interaction.command is not None:
             command_name = interaction.command.name
         else:
-            command_name = "Unkown command name"
+            command_name = "Unknown command name"
 
         logger.error(f"Error in app command {command_name}. {error}")
 
@@ -96,7 +96,7 @@ class Hux(commands.Bot):
         if ctx.command is not None:
             command_name = ctx.command.name
         else:
-            command_name = "Unkown command name"
+            command_name = "Unknown command name"
 
         logger.error(f"Error in command {command_name}. {error}")
 
