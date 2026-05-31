@@ -11,7 +11,7 @@ from log_manager.logging_manager import setup_loggin
 
 logger = logging.getLogger(__name__)
 
-load_dotenv(Path(__file__) / ".env")
+load_dotenv(Path(__file__).parent / ".env")
 
 COGS = [
     "cogs.info",
