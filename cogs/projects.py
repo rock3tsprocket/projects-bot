@@ -1,60 +1,90 @@
-from discord.ext import commands
+import os
+import asyncio
+import discord
+
 
 from typing import TYPE_CHECKING
+from pathlib import Path
+from discord.ext import commands
+from discord import app_commands
+from dotenv import load_dotenv
+from aiohttp import ClientSession
 
 if TYPE_CHECKING:
     from main import Hux
 
+load_dotenv(Path(__file__).parent.parent / ".env")
+
 
 class Projects(commands.Cog):
+    gh_group = app_commands.Group(
+        name="github",
+        description="Commands that search github users or repositories.",
+    )
+
     def __init__(self, bot: Hux):
         self.bot = bot
 
-        # Example data (you can expand this)
-        self.projects = {
-            "lufus": {
-                "repo": "<https://github.com/Hog185/Lufus>",
-                "release": "<https://github.com/Hog185/Lufus/releases/latest>",
-            },
-            "hux-bot": {
-                "repo": "<https://github.com/Saber0324/projects-bot>",
-                "release": "<https://github.com/Saber0324/projects-bot/releases/latest>",
-            },
-        }
+    @gh_group.command(
+        name="search", description="Search for a specified github user or repository"
+    )
+    async def search(
+        self, interaction: discord.Interaction, user: str, repository: str | None = None
+    ) -> None:
+        searched_item = Request(user, repository)
+        await interaction.response.send_message(asyncio.run(searched_item.get_data()))
 
-    # base command: !projects
-    @commands.group(invoke_without_command=True)
-    async def projects(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `!projects help` to see available commands.")
 
-    # !projects help/h
-    @projects.command(aliases=["h"])
-    async def help(self, ctx: commands.Context) -> None:
-        await ctx.send(
-            "**Projects Commands:**\n"
-            "`!projects list` → list all projects\n"
-            "`!projects release <name>` → get latest release\n"
-            "`!projects help` → show this message"
-        )
+class Request:
+    def __init__(self, user: str, repo: str | None = None) -> None:
+        self.user = user
+        self.repo = repo
+        self.headers = {"Authorization": str(os.getenv("github_token"))}
 
-    # !projects list/l
-    @projects.command(aliases=["l"])
-    async def list(self, ctx: commands.Context) -> None:
-        msg = "**Current Projects:**\n"
-        for name, data in self.projects.items():
-            msg += f"- **{name}** → {data['repo']}\n"
-
-        await ctx.send(msg)
-
-    # !projects release <project_name>
-    @projects.command(aliases=["rel"])
-    async def release(self, ctx: commands.Context, project_name: str) -> None:
-        project_name = project_name.lower()
-        if project_name not in self.projects:
-            await ctx.send("Project not found.")
+    def get_url(self) -> str | None:
+        if not self.user:
+            print("User must be specified.")
             return
-        link = self.projects[project_name]["release"]
-        await ctx.send(f"Latest release for **{project_name}**:\n{link}")
+        elif self.user and self.repo:
+            url = f"https://api.github.com/repos/{self.user}/{self.repo}"
+            return url
+        elif self.user:
+            url = f"https://api.github.com/search/repositories?q=user:{self.user}"
+            return url
+
+    async def get_response(self, url):
+        try:
+            async with ClientSession() as session:
+                response = await session.get(url=url, headers=self.headers)
+                data = response.json()
+                return await data
+        except Exception:
+            print("Missing url.")
+            return
+
+    async def get_data(self):
+        data = await self.get_response(self.get_url())
+        if data is not None and "message" not in data:
+            if "items" in data:
+                return {
+                    repo["name"]: {
+                        "created_at": repo["created_at"],
+                        "license_name": (repo["license"] or {}).get(
+                            "name", "No license"
+                        ),
+                        "url": repo["html_url"],
+                        "description": repo["description"] or "No description",
+                    }
+                    for repo in data["items"]
+                }
+            else:
+                return {
+                    "name": data["name"],
+                    "license_name": data["license"]["name"],
+                    "url": data["url"],
+                    "description": data["description"],
+                    "created_at": data["created_at"],
+                }
 
 
 async def setup(bot: Hux) -> None:
