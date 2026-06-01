@@ -158,7 +158,7 @@ class Eval(commands.Cog):
                 old_response = msg
                 break
 
-        output, return_code = await self.eval_logic(code)
+        output, return_code = await self.eval_logic(*extract_code(CODE_PATTERN, code))
 
         if old_response:
             message = self._format_output(output=output, return_code=return_code)
