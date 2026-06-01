@@ -115,6 +115,8 @@ class Hux(commands.Bot):
                 pass
             case subprocess.TimeoutExpired():
                 await ctx.send("The command took too long to execute.")
+            case commands.CommandOnCooldown():
+                await ctx.send("The command is still in cooldown.")
             case _:
                 await ctx.send("An unexpected error ocurred")
                 logger.error(f"Unhandled exception: {error}")
