@@ -24,7 +24,7 @@
   "file": {
    "class": "logging.handlers.RotatingFileHandler",
    "formatter": "detailed",
-   "filename": "logs/bot.log",
+   "filename": "/home/saber/projects/hux/src/hux/logs/bot.log",
    "maxBytes": 33554432,
    "backupCount": 3
   },
