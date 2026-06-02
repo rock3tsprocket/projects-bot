@@ -1,6 +1,6 @@
 import re
 
-CODE_PATTERN = r"```+[ \t]*(py|python|go|golang|rs|rust|bf|brainfuck|c|cpp|c\+\+|cs|c#)[ \t]*\n(.*?)```+"
+CODE_PATTERN = r"```+[ \t]*(.*?)[ \t]*\n(.*?)```+"
 
 
 def extract_code(pattern: str, text: str) -> tuple[str, str]:
