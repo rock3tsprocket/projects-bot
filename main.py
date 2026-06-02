@@ -73,9 +73,9 @@ class Hux(commands.Bot):
 
         async def send(msg: str):
             if interaction.response.is_done():
-                await send(msg)
+                await interaction.followup.send(msg)
             else:
-                await send(msg)
+                await interaction.response.send_message(msg)
 
         if isinstance(error, app_commands.CommandInvokeError):
             error = error.original
