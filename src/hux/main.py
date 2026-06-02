@@ -9,7 +9,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from hux.data.database import Database
-from hux.log_manager.logging_manager import setup_loggin
+from hux.log_manager.logging_manager import setup_loggin, ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class Hux(commands.Bot):
     async def setup_hook(self) -> None:
         setup_loggin()
         self.tree.on_error = self.on_app_command_error
-        self.db = Database("hux.data/bot.db")
+        self.db = Database(ROOT / "data" / "bot.db")
         await self.db.setup()
 
         for cog in COGS:
