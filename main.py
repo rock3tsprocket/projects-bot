@@ -95,6 +95,11 @@ class Hux(commands.Bot):
                 await interaction.response.send_message(
                     "The bot doesn't have permission to do this."
                 )
+                case discord.errors.Forbidden():
+                await interaction.response.send_message(
+                    "The bot doesn't have permission to do this."
+                )
+
             case _:
                 await interaction.followup.send("An unexpected error ocurred")
                 logger.error(f"Unhandled exception: {error}")
