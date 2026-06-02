@@ -62,7 +62,7 @@ class CorrectUsageMenu(BaseView):
     pi_emoji = discord.PartialEmoji(name="Python", id=1506839490747043890)
     go_emoji = discord.PartialEmoji(name="Go", id=1506839466969399296)
     bf_emoji = discord.PartialEmoji(name="Brainfuck", id=1511509972222214347)
-    rs_emoji = discord.PartialEmoji(name="Rust", id=1511509188562391130)
+    rs_emoji = discord.PartialEmoji(name="Rust", id=1511512751338684457)
     c_emoji = discord.PartialEmoji(name="C", id=1511511290537836554)
     cpp_emoji = discord.PartialEmoji(name="C++", id=1511511317528449064)
     cs_emoji = discord.PartialEmoji(name="C#", id=1511511342677364796)
