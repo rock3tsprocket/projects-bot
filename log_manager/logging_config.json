@@ -47,6 +47,10 @@
   "discord": {
    "level": "WARNING",
    "propagate": false
+  },
+  "aiosqlite": {
+   "level": "WARNING",
+   "propagate": false
   }
  }
 }

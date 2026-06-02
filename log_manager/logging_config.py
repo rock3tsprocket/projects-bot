@@ -41,6 +41,7 @@ loggin_config = {
     "loggers": {
         "root": {"level": "DEBUG", "handlers": ["queue_handler"]},
         "discord": {"level": "WARNING", "propagate": False},
+        "aiosqlite": {"level": "WARNING", "propagate": False},
     },
 }
 
