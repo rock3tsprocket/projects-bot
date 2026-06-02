@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from templates.models import Snippet
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 if TYPE_CHECKING:
     from main import Hux
@@ -29,7 +29,7 @@ class Snippets(commands.Cog):
             snippet = Snippet(*result)
             return snippet
 
-    def message_list_builder(self, results: list) -> str:
+    def message_list_builder(self, results: Iterable) -> str:
         message = ""
         for result in results:
             snippet = Snippet(*result)
