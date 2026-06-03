@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class Testing(commands.Cog):
     def __init__(self, bot: Hux):
         self.bot = bot
+        self.eval_message_pairs = []
 
     @commands.command(name="leave_server")
     @commands.is_owner()
@@ -28,18 +29,18 @@ class Testing(commands.Cog):
         await guild.leave()
 
     @commands.command(name="replied")
-    @commands.is_owner()
     async def reply(self, ctx: commands.Context, *, text: str) -> None:
-        self.reply_message = await ctx.reply("Placeholder")
-        self.user_message = ctx.message
-        logger.info(self.reply_message.id)
+        reply_message = await ctx.reply("Fake eval result\n```hello world```")
+        self.eval_message_pairs.append((reply_message, ctx.message))
+        logger.info(f"User msg: {ctx.message.id}, bot msg: {reply_message.id}")
 
     @commands.Cog.listener()
     async def on_message_edit(
         self, before: discord.Message, after: discord.Message
     ) -> None:
-        logger.info(f"{before.id} was edited to {after.id}")
-        await after.add_reaction("\U0001f501")
+        for _, user_message in self.eval_message_pairs:
+            if user_message.id == after.id:
+                await after.add_reaction("\U0001f501")
 
     @commands.Cog.listener()
     async def on_reaction_add(
@@ -47,10 +48,15 @@ class Testing(commands.Cog):
     ) -> None:
         if user.bot:
             return
-        if reaction.emoji == "\U0001f501":
-            await reaction.message.reply(
-                f"reacted message is: {self.user_message.jump_url}\nbot's message is {self.reply_message.jump_url}"
-            )
+
+        for bot_reply, user_message in self.eval_message_pairs:
+            if reaction.emoji == "\U0001f501" and user.id == user_message.author.id:
+                await bot_reply.reply(
+                    f"reacted message is: {user_message.jump_url}\n"
+                    f"bot's message is: {bot_reply.jump_url}"
+                )
+                await reaction.message.clear_reactions()
+                break
 
 
 async def setup(bot: Hux):
