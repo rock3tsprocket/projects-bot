@@ -19,7 +19,7 @@ class Testing(commands.Cog):
         if ctx.guild is not None:
             await ctx.send(f"Leaving server {ctx.guild.name}")
             await ctx.guild.leave()
-            logger.info("Left the server {ctx.guild.name} with id **{ctx.guild.id}**")
+            logger.info(f"Left the server {ctx.guild.name} with id **{ctx.guild.id}**")
 
 
 async def setup(bot: Hux):
