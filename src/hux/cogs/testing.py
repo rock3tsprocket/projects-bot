@@ -1,6 +1,5 @@
 import logging
 
-import discord
 from discord.ext import commands
 
 from typing import TYPE_CHECKING
