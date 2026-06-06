@@ -1,13 +1,18 @@
 import logging
 
+from discord.app_commands import command
 from discord.ext import commands
 
 from typing import TYPE_CHECKING
+
+from hux.templates.parse import extract_code, CODE_PATTERN
 
 if TYPE_CHECKING:
     from hux.main import Hux
 
 logger = logging.getLogger(__name__)
+
+BF_PATTERN = r"```+[ \t]*(.*?)[ \t]*\n([^\n]*)```+"
 
 
 class Testing(commands.Cog):
@@ -26,6 +31,10 @@ class Testing(commands.Cog):
         await ctx.send(f"Leaving server **{guild.name}**")
         logger.info(f"Left the server {guild.name} with id {guild.id}")
         await guild.leave()
+
+    @commands.command()
+    async def parse_testing(self, ctx: commands.Context, *, code: str) -> None:
+        await ctx.send("\n".join(extract_code(BF_PATTERN, code)))
 
 
 async def setup(bot: Hux):
