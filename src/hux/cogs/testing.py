@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-BF_PATTERN = r"```+[ \t]*(.*?)[ \t]*\n([^\n]*)```+"
+BF_PATTERN = r"```+[ \t]*(.*?)[ \t]*\n(.*?)```+[ \t]*\n?([^\n]*)?"
 
 
 class Testing(commands.Cog):
