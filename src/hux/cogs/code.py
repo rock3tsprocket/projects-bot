@@ -39,6 +39,7 @@ class Eval(commands.Cog):
             )
         elif language.lower() in ("bf", "brainfuck"):
             bfinput = code[code.find("\n```") + 4 :]
+            print(bfinput)
             if bfinput.startswith(" "):
                 bfinput = bfinput[1:]
             if bfinput == code[3:]:
