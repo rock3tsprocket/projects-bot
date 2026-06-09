@@ -122,6 +122,8 @@ class Hux(commands.Bot):
                 await ctx.send(
                     "The comand has a missing argument, check correct usage."
                 )
+            case commands.NotOwner():
+                await ctx.send("You're not the owner of the bot. ||Fuck you||")
             case _:
                 await ctx.send("An unexpected error ocurred")
                 logger.error(f"Unhandled exception: {error}")
