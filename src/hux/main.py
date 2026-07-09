@@ -8,20 +8,22 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
 
-from data.database import Database
-from log_manager.logging_manager import setup_loggin
+from hux.data.database import Database
+from hux.log_manager.logging_manager import setup_loggin, ROOT
 
 logger = logging.getLogger(__name__)
 
-load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 COGS = [
-    "cogs.info",
-    "cogs.fun",
-    "cogs.projects",
-    "cogs.snippets",
-    "cogs.code",
-    "cogs.roles",
+    "hux.cogs.info",
+    "hux.cogs.fun",
+    "hux.cogs.projects",
+    "hux.cogs.snippets",
+    "hux.cogs.code",
+    "hux.cogs.roles",
+    "hux.cogs.testing",
+    "hux.cogs.code_snippets",
 ]
 
 
@@ -48,7 +50,7 @@ class Hux(commands.Bot):
     async def setup_hook(self) -> None:
         setup_loggin()
         self.tree.on_error = self.on_app_command_error
-        self.db = Database("data/bot.db")
+        self.db = Database(ROOT / "data" / "bot.db")
         await self.db.setup()
 
         for cog in COGS:
@@ -116,6 +118,12 @@ class Hux(commands.Bot):
                 await ctx.send("The command took too long to execute.")
             case commands.CommandOnCooldown():
                 await ctx.send("The command is still in cooldown.")
+            case commands.MissingRequiredArgument():
+                await ctx.send(
+                    "The comand has a missing argument, check correct usage."
+                )
+            case commands.NotOwner():
+                await ctx.send("You're not the owner of the bot. ||Fuck you||")
             case _:
                 await ctx.send("An unexpected error ocurred")
                 logger.error(f"Unhandled exception: {error}")

@@ -5,16 +5,16 @@ import discord
 from typing import TYPE_CHECKING
 from pathlib import Path
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, embeds
 from dotenv import load_dotenv
 from aiohttp import ClientSession
 
-from templates.embeds import github_repo_embed, github_user_embed
+from hux.templates.embeds import github_repo_embed, github_user_embed
 
 if TYPE_CHECKING:
-    from main import Hux
+    from hux.main import Hux
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
 
 
 class Projects(commands.Cog):
@@ -55,6 +55,18 @@ class Projects(commands.Cog):
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message("The searched user was not found.")
+
+    @app_commands.command(name="source")
+    async def src(self, interaction: discord.Interaction):
+        src_repo = Request(user="Saber0324", repo="Hux")
+        data = await src_repo.get_data()
+        if data != "Not found":
+            embed = github_repo_embed(data)
+            await interaction.response.send_message(embed=embed)
+        else:
+            await interaction.response.send_message(
+                "An error ocurred while searching for the source repository."
+            )
 
 
 class Request:

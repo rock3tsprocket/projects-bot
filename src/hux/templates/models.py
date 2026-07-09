@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import string
 
+
 @dataclass
 class Snippet:
     title: str
@@ -16,6 +17,7 @@ class Warn:
     moderator_id: int
     date: str
     warn_id: int
+
 
 def parse_time(message: str):
     separated = [char for char in message]

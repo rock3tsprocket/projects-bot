@@ -7,16 +7,16 @@ import logging
 from time import time as currenttime
 import re
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from templates.view import BaseView, CorrectUsageMenu
-from templates.parse import (
+from hux.templates.view import BaseView, CorrectUsageMenu
+from hux.templates.parse import (
     CODE_PATTERN,
     extract_code,
 )
 
 if TYPE_CHECKING:
-    from main import Hux
+    from hux.main import Hux
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 class Eval(commands.Cog):
     def __init__(self, bot: Hux):
         self.bot = bot
+        self.eval_message_pairs = []
 
     async def eval_logic(self, language: str, code: str) -> tuple[str, int]:
         if language.lower() in ("python", "py"):
@@ -38,6 +39,7 @@ class Eval(commands.Cog):
             )
         elif language.lower() in ("bf", "brainfuck"):
             bfinput = code[code.find("\n```") + 4 :]
+            print(bfinput)
             if bfinput.startswith(" "):
                 bfinput = bfinput[1:]
             if bfinput == code[3:]:
@@ -130,13 +132,15 @@ class Eval(commands.Cog):
             view=view,
         )
         view.message = bot_message
+        self.eval_message_pairs.append((bot_message, ctx.message))
 
     @commands.Cog.listener()
     async def on_message_edit(
         self, before: discord.Message, after: discord.Message
     ) -> None:
-        if before.content.startswith("!e"):
-            await after.add_reaction("\U0001f501")
+        for _, user_message in self.eval_message_pairs:
+            if user_message.id == after.id and before.edited_at is None:
+                await after.add_reaction("\U0001f501")
 
     @commands.Cog.listener()
     async def on_reaction_add(
@@ -144,41 +148,39 @@ class Eval(commands.Cog):
     ) -> None:
         if user.bot:
             return
-        if not (
-            reaction.message.content.startswith("!e")
-            and str(reaction.emoji) == "\U0001f501"
-        ):
-            return
 
-        code = None
-        match = re.match(r"^!(?:eval|e)\s+([\s\S]+)", reaction.message.content)
-        if match is None:
+        code = bot_reply = user_message = None
+        for bot_reply, user_message in reversed(self.eval_message_pairs):
+            if (
+                reaction.emoji == "\U0001f501"
+                and user.id == user_message.author.id
+                and reaction.count > 1
+            ):
+                match = re.match(r"^!(?:eval|e)\s+([\s\S]+)", reaction.message.content)
+                if match is None:
+                    logger.error(
+                        f"Eval re-run didn't find correct prefix | {reaction.message.content}"
+                    )
+                    return
+
+                code = match.group(1).strip()
+                break
+
+        if code is None or bot_reply is None or user_message is None:
             logger.error(
-                f"Eval re-run didn't find correct prefix | {reaction.message.content}"
+                f"Eval re-run data passed as None | code: {code} | bot reply: {bot_reply} | user message: {user_message} "
             )
             return
-
-        code = match.group(1).strip()
-
-        if code is None:
-            logger.error("Eval re-run code passed as None")
-            return
-
-        old_response = None
-        async for msg in reaction.message.channel.history(limit=20):
-            if msg.author == self.bot.user:
-                old_response = msg
-                break
 
         output, return_code = await self.eval_logic(*extract_code(CODE_PATTERN, code))
 
-        if old_response:
-            message = self._format_output(output=output, return_code=return_code)
-            logger.info(f"Eval from {reaction.message.author} rerun sent succesfully")
-            await old_response.edit(
-                content=message, allowed_mentions=discord.AllowedMentions.none()
-            )
+        message = self._format_output(output=output, return_code=return_code)
+        logger.info(f"Eval from {reaction.message.author} rerun sent succesfully")
+        await bot_reply.edit(
+            content=message, allowed_mentions=discord.AllowedMentions.none()
+        )
         await reaction.message.clear_reactions()
+        self.eval_message_pairs.remove((bot_reply, user_message))
 
 
 def run_python(code: str) -> subprocess.CompletedProcess[str]:
@@ -271,8 +273,8 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
     dp = 0  # Data pointer
 
     stack = []  # Bracket nest stack
-    jump = [None] * len(code)  # Jump table
-    ip = 0  # Instruction pointer
+    jump: list[int | None] = [None] * len(code)  # Jump table
+    ip: int = 0  # Instruction pointer
     output = ""  # Output
     status = subprocess.CompletedProcess(bfinput, 0, "", "")
 
@@ -292,7 +294,7 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
                     break
                 else:
                     jump[i] = stack.pop()
-                jump[jump[i]] = i
+                jump[cast(int, jump[i])] = i
 
     while ip < len(code) and status.returncode == 0:
         match code[ip]:
@@ -315,10 +317,10 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
                 inputptr += 1
             case "[":
                 if not cells[dp]:
-                    ip = jump[ip]
+                    ip = cast(int, jump[ip])
             case "]":
                 if cells[dp]:
-                    ip = jump[ip]
+                    ip = cast(int, jump[ip])
                     continue
         ip += 1
         if currenttime() - starttime > 30:
