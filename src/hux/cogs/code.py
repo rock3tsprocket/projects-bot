@@ -25,6 +25,7 @@ class Eval(commands.Cog):
     def __init__(self, bot: Hux):
         self.bot = bot
         self.eval_message_pairs = []
+        self.bf_input: str = ""
 
     async def eval_logic(self, language: str, code: str) -> tuple[str, int]:
         if language.lower() in ("python", "py"):
@@ -38,15 +39,9 @@ class Eval(commands.Cog):
                 None, functools.partial(run_go, code)
             )
         elif language.lower() in ("bf", "brainfuck"):
-            bfinput = code[code.find("\n```") + 4 :]
-            print(bfinput)
-            if bfinput.startswith(" "):
-                bfinput = bfinput[1:]
-            if bfinput == code[3:]:
-                bfinput = ""
             loop = asyncio.get_event_loop()
             docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_bf, code, bfinput)
+                None, functools.partial(run_bf, code, self.bf_input)
             )
         elif language.lower() in ("rs", "rust"):
             loop = asyncio.get_event_loop()
@@ -122,6 +117,15 @@ class Eval(commands.Cog):
             view.message = await ctx.send("Correct usage for:", view=view)
             return
 
+        
+        # Get the stdin for Brainf**k
+        # NOTE: i don't like this
+        try:
+            self.bf_input = code[code.find("\n```") + 4:]
+        except IndexError:
+            self.bf_input = ""
+        self.bf_input = self.bf_input.strip()
+
         output, return_code = await self.eval_logic(*extract_code(CODE_PATTERN, code))
 
         message = self._format_output(output=output, return_code=return_code)
@@ -171,6 +175,13 @@ class Eval(commands.Cog):
                 f"Eval re-run data passed as None | code: {code} | bot reply: {bot_reply} | user message: {user_message} "
             )
             return
+
+        # Again, get Brainf**k input
+        try:
+            self.bf_input = code[code.find("\n```") + 4:]
+        except IndexError:
+            self.bf_input = ""
+        self.bf_input = self.bf_input.strip()
 
         output, return_code = await self.eval_logic(*extract_code(CODE_PATTERN, code))
 
@@ -265,10 +276,10 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
+def run_bf(code: str, bf_input: str = "") -> subprocess.CompletedProcess[str]:
     starttime = currenttime()
     cells = bytearray(30000)  # Memory (30kb)
-    bfinput += "\0"  # Add a null character to the end of the input
+    bf_input += "\0"  # Add a null character to the end of the input
     inputptr = 0  # Pointer that points to a character in the input
     dp = 0  # Data pointer
 
@@ -276,7 +287,7 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
     jump: list[int | None] = [None] * len(code)  # Jump table
     ip: int = 0  # Instruction pointer
     output = ""  # Output
-    status = subprocess.CompletedProcess(bfinput, 0, "", "")
+    status = subprocess.CompletedProcess(bf_input, 0, "", "")
 
     if code.count("[") != code.count("]"):
         status.stderr = "Brackets are unbalanced"
@@ -313,7 +324,10 @@ def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
             case ".":
                 output += chr(cells[dp])
             case ",":
-                cells[dp] = ord(bfinput[inputptr])
+                try:
+                    cells[dp] = ord(bf_input[inputptr])
+                except IndexError:
+                    cells[dp] = 0
                 inputptr += 1
             case "[":
                 if not cells[dp]:

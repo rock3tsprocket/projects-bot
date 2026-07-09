@@ -65,7 +65,7 @@ def correctUsageEmbed(language: str) -> discord.Embed:
     description = {
         "Python": "!e" + "\n" + r"\`\`\`py" + "\ncode here \n" + r"\`\`\`",
         "Go": "!e" + "\n" + r"\`\`\`go" + "\npackage main \ncode here \n" + r"\`\`\`",
-        "Brainfuck": "!e" + "\n" + r"\`\`\`bf" + "\ncode here \n" + r"\`\`\`",
+        "Brainfuck": "!e" + "\n" + r"\`\`\`bf" + "\ncode here \n" + r"\`\`\` input (stdin) here",
         "Rust": "!e" + "\n" + r"\`\`\`rs" + "\ncode here \n" + r"\`\`\`",
         "C": "!e" + "\n" + r"\`\`\`c" + "\ncode here \n" + r"\`\`\`",
         "C++": "!e" + "\n" + r"\`\`\`cpp" + "\ncode here \n" + r"\`\`\`",
